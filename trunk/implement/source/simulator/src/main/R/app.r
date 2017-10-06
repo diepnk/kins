@@ -250,7 +250,7 @@ server <- shinyServer(function(input, output) {
     )
   })
   
-  # [Diep] Calculate 
+  # [Diep] Calculate the risk by profile
   # [Diep] This data frame is used as a datasource for Risk Profile plot
   datasetRiskProfile <- reactive({
     # [Diep] Get all columns from db excepts the "age" column
