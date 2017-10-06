@@ -1,0 +1,10 @@
+1. And to check boolean
+=AND(LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181)=0, LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$C$2:$C$181)=1)
+
+2. =IF(AND(LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181)=0, LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$C$2:$C$181)=1),IF(RAND()*(1-0)+0<0.5, 0, 1),ROUND(RAND()*(75-35)+35,0))
+
+3. Random between min/max
+=ROUND(RAND()*(LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$C$2:$C$181)-LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181))+LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181),0)
+
+5. DONE - Auto random by column name and data type (boolean and not boolean types)
+=IF(AND(LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181)=0, LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$C$2:$C$181)=1),IF(RAND()*(1-0)+0<0.5, 0, 1),ROUND(RAND()*(LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$C$2:$C$181)-LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181))+LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181),0))
