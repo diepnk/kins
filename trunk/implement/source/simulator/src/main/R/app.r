@@ -7,12 +7,12 @@ library(MASS)
 library(data.table)
 require(DT)
 library(ggplot2)
-setwd("D:/Project/TS/KINS/deliverables/trunk/implement/source/simulator/src/main/R")
+setwd("D:/Project/TS/KINS/GIT/deliverables/trunk/implement/source/simulator/src/main/R")
 
 #dbName<-"BunpaiRece"
 #cString<-odbcConnect(dbName)
 
-cString<-odbcDriverConnect('driver={SQL Server};server=DIEPNGUYEN2789\\SQLEXPRESS;database=test;uid=sa; pwd=gcsvn@123')
+cString<-odbcDriverConnect('driver={SQL Server};server=DIEPNGUYEN2789\\SQLEXPRESS;database=kins;uid=sa; pwd=gcsvn@123')
 
 variables<-"*"
 sql_learn<-paste("select", variables, " from [dbo].[test]")#sql
