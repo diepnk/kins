@@ -16,6 +16,7 @@ cString<-odbcDriverConnect('driver={SQL Server};server=DIEPNGUYEN2789\\SQLEXPRES
 
 variables<-"*"
 sql_learn<-paste("select", variables, " from [dbo].[test]")#sql
+# [Diep] Get rows that there are full data (not missing any cell's value)
 df_learn_source<- na.omit(sqlQuery(cString, sql_learn))
 
 df_learn<-df_learn_source
@@ -281,7 +282,7 @@ server <- shinyServer(function(input, output) {
     
   })
   
-  # Render Risk Ratio plot
+  # [Diep] Render Risk Ratio plot
   output$distPlot <- renderPlot({
     df.hyoujun<-data.frame(age = datasetInput()[,1], preds = datasetInput()[,2])
     df.hyoujun<-cbind(df.hyoujun, class = "hyoujun")
@@ -299,12 +300,12 @@ server <- shinyServer(function(input, output) {
     
   })
   
-  # Render the datatable that list all values
+  # [Diep] Render the datatable that list all values
   output$view<-renderDataTable({
     datasetInput()
     },options = list(orderClasses = TRUE))
   
-  # Export CSV
+  # [Diep] Export CSV
   output$saved<-renderPrint({
     input$Save
     write.table(datasetInput(), "testdata.csv")
@@ -313,7 +314,7 @@ server <- shinyServer(function(input, output) {
   })
 
   
-  # Render a box that display the risk ratio (the left one)
+  # [Diep] Render a box that display the risk ratio (the left one)
   output$ratio <- renderValueBox({ 
     val<-do.judgement(datasetInput(), input$age)
     valueBox( 
@@ -324,7 +325,7 @@ server <- shinyServer(function(input, output) {
     ) 
   })
   
-  # Render a box that display Recomments  (the middle one)
+  # [Diep] Render a box that display Recomments  (the middle one)
   output$recommend <- renderValueBox({
     val<-do.judgement(datasetInput(), input$age)
     valueBox( 
@@ -335,7 +336,7 @@ server <- shinyServer(function(input, output) {
     ) 
   })
   
-  # Render a box that display Add on premium  (the right one)
+  # [Diep] Render a box that display Add on premium  (the right one)
   output$premium <- renderValueBox({
     fee = 1000
     val<-do.judgement(datasetInput(), input$age)
@@ -347,7 +348,7 @@ server <- shinyServer(function(input, output) {
     ) 
   })
   
-  # Render the plot that show the Risk profile of Admission
+  # [Diep] Render the plot that show the Risk profile of Admission
   output$riskPlot <- renderPlot({
     name.class<-names(datasetRiskProfile())
     name.class<-gsub("Admission_", "", name.class)
@@ -363,7 +364,7 @@ server <- shinyServer(function(input, output) {
     
    })
   
-  # Render the footer comments
+  # [Diep] Render the footer comments
   output$comment <- renderPrint({
     val<-do.judgement(datasetInput(), input$age)
     if(val[2] == 4)
