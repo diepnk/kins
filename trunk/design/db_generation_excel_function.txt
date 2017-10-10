@@ -7,4 +7,10 @@
 =ROUND(RAND()*(LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$C$2:$C$181)-LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181))+LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181),0)
 
 5. DONE - Auto random by column name and data type (boolean and not boolean types)
-=IF(AND(LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181)=0, LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$C$2:$C$181)=1),IF(RAND()*(1-0)+0<0.5, 0, 1),ROUND(RAND()*(LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$C$2:$C$181)-LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181))+LOOKUP(B$1,val.range.def_20171004!$A$2:$A$181,val.range.def_20171004!$B$2:$B$181),0))
+=IF(
+AND(B$2=0, B$3=1),IF(ABS(RAND())*(1-0)+0<0.5, 0, 1),
+IF(
+OR(B$1="Creatinin", B$1="HbA1c_HOKAN", B$1="Nyousan"), ROUND(ABS(RAND())*(B$3-IF(B$2=-1,0,B$2))+IF(B$2=-1,0,B$2),1),
+ROUND(ABS(RAND())*(B$3-IF(B$2=-1,0,B$2))+IF(B$2=-1,0,B$2),0)
+)
+)
