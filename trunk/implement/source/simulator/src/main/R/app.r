@@ -1,4 +1,4 @@
-###
+
 library(shiny)
 library(shinythemes)
 library(shinydashboard)
@@ -9,8 +9,6 @@ require(DT)
 library(ggplot2)
 setwd("D:/Project/TS/KINS/GIT/deliverables/trunk/implement/source/simulator/src/main/R")
 
-#dbName<-"BunpaiRece"
-#cString<-odbcConnect(dbName)
 
 cString<-odbcDriverConnect('driver={SQL Server};server=DIEPNGUYEN2789\\SQLEXPRESS;database=kins;uid=sa; pwd=gcsvn@123')
 
@@ -21,27 +19,32 @@ df_learn_source<- na.omit(sqlQuery(cString, sql_learn))
 
 df_learn<-df_learn_source
 
-#load model
-#################
-#sample model
-sample.model<-function(df)
-{
-  #to be implemented
-  return(res)
-}
+
+ #df_learn<-read.csv("dummydata.csv", sep = ",")#tantative
+ 
+ basedata <- as.data.frame(lapply(df_learn, mean))
+ basedata$sex = 1
+ basedata[21:180]<-0
 
 
 #################
-
+#sample
 recalc.risk<-function(data)
 {
-  #to be implemented
+  Diabetes<-1/(1 + rnorm(1,mean = 1, sd = 0.5))
+  Stroke<-1/(1 + rnorm(1,mean = 1, sd = 0.5))
+  HeartAtack<-1/(1 + rnorm(1,mean = 1, sd = 0.5))
+  pred<-data.frame(Diabetes, Stroke, HeartAtack)
   return(pred)
 }
-
+#sample
  recalc.days<-function(data)
  {
-   #to be implemented
+   rnd1<-rnorm(1,mean = 2, sd = 1)
+   x.range<-seq(30,80)
+   pred<-data.frame(val = rnd1*x.range*x.range/100)
+   names(pred)<-"Pred Admission days"
+   # plot(x.range, y.youin)
    return(pred)
  }
 
@@ -179,10 +182,7 @@ server <- shinyServer(function(input, output) {
 #       Value = input$plotitems,
 #       stringsAsFactors=FALSE)
 #   })
-# 
-  
-  
-  
+#   
   # [Diep] Get input of checkbox, not use currently
   output$checkboxOut<-renderPrint({ 
     names(basedata[input$selected_youin])
@@ -191,7 +191,6 @@ server <- shinyServer(function(input, output) {
 #   InitialParam<- reactive({
 #     basedata
 #   })
-  
   
   # [Diep] reactive to only update change that get from the inputs such as age, BMI, BP_H, BP_L, HbA1c_HOKAN and checkboxes
   updatedParam <- reactive({
@@ -213,28 +212,25 @@ server <- shinyServer(function(input, output) {
   datasetInput <- reactive({
     # [Diep] Get all columns from db excepts the "age" column
     b<-basedata[setdiff(colnames(basedata), "age")] 
-    
     # [Diep] the "age" will hard-code init by a sequence from 30 to 80 
     age<-seq(30,80)
-    
     # [Diep] re-combine the age into the basedata
     df.data<-cbind(age, b)
     
     # df.data$age<-input$age
-    
     # [Diep] Calucate the risk at the standard data (do not check checkboxes, preds is zero)
     df.data[input$selected_youin]<-0
     df.preds.zero<-recalc.risk(df.data)
     df.pred.days.zero<-recalc.days(df.preds.zero)
     names(df.pred.days.zero)<-"preds.hyoujun"
 
-    
     # [Diep] Get the real input from the UI
     #use input values
     df.data$BMI<-input$bmi
     df.data$BP_H<-input$bp_h
     df.data$BP_L<-input$bp_l
     df.data$HbA1c_HOKAN<-input$hba1c
+    
     
     df.data[input$selected_youin]<-1
     # [Diep] Calucate the risk base on the real input data that get from UI
@@ -259,7 +255,6 @@ server <- shinyServer(function(input, output) {
     age<-seq(30,80)
     # [Diep] re-combine the age into the basedata
     df.data<-cbind(age, b)
-    
     # [Diep] Get the real input from the UI
     #use input values
     df.data$BMI<-input$bmi
@@ -272,7 +267,7 @@ server <- shinyServer(function(input, output) {
     # [Diep] Calucate the risk by age base on the real input data that get from UI
     df.preds.nonzero<-data.frame(age = age, recalc.risk(df.data))
     # [Diep] Get the risk by a specificed age that is inputed from UI
-    df.preds.age<-subset(df.preds.nonzero, df.preds.nonzero$age == input$age)
+    df.preds.age<-subset(df.preds.nonzero,df.preds.nonzero$age == input$age)
     # [Diep] Detached the age column for get sum in the next step
     df.plot<-df.preds.age[setdiff(colnames(df.preds.age), "age")]
     # [Diep] Get sum for each indicators
@@ -290,13 +285,13 @@ server <- shinyServer(function(input, output) {
     df.youin<-cbind(df.youin, class = "youin")
     df.plot<-rbind(df.hyoujun, df.youin)
     #plot predicted days
-    # ggplot(df.plot, aes(x = age, y = preds, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "predicted days") +
-    #   theme(legend.position=c(0.2,0.8), title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
+     ggplot(df.plot, aes(x = age, y = preds, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "predicted days") +
+       theme(legend.position=c(0.2,0.8), title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
 
     #plot ratio
-    ggplot(datasetInput(), aes(x = age, y = ratio, color = "red")) + geom_line(size = 1.2) + labs(title = "Risk Ratio") +
-      theme(legend.position= "none", title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
-    
+    # ggplot(datasetInput(), aes(x = age, y = ratio, color = "red")) + geom_line(size = 1.2) + labs(title = "Risk Ratio") +
+    #   theme(legend.position= "none", title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
+    # 
     
   })
   
@@ -313,7 +308,6 @@ server <- shinyServer(function(input, output) {
     print(datasetInput()$hyoujun[1])
   })
 
-  
   # [Diep] Render a box that display the risk ratio (the left one)
   output$ratio <- renderValueBox({ 
     val<-do.judgement(datasetInput(), input$age)
@@ -371,14 +365,8 @@ server <- shinyServer(function(input, output) {
     {
       txt<- "echo > No significant risk is observed."
     }else{
-      # ind<-order(datasetRiskProfile(), decreasing = T)[1]
-      # coef<-models.adm.first[as.factor(names(d[ind])),2][[1]]$coefficients
-      # odds<-exp(updatedParam()[names(coef)[-1]] * coef[-1])
-      # ranking<-sort(odds, decreasing = T)
-      # top.effect<-names(ranking[1])
-      # txt<- paste("Lapis system found that ", top.effect , " is the major negative effect on future admission risk")
       
-      diff<-updatedParam() - basedata
+            diff<-updatedParam() - basedata
       diff.nonzero<-subset(t(diff), t(diff) != 0)
       
       res.day<-data.frame()
@@ -393,7 +381,7 @@ server <- shinyServer(function(input, output) {
       }
       idx<-order(res.day$Pred.Admission.days, decreasing = T)
       top.effect<-res.day$variable[idx[1]]
-      txt<- paste("Lapis echo > ", top.effect , " is the major negative effect on future admission risk")
+      txt<- paste("echo > ", top.effect , " is the major negative effect on future admission risk")
     }
     print(txt)
   })
