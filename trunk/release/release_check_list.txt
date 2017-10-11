@@ -1,0 +1,8 @@
+1) Document:
+	- trunk\design\r_doc.doc
+	- trunk\design\source_code_structure.pptx
+	- trunk\design\kins_db.zip
+
+2) Source code:
+	- trunk\implement\source\simulator\src\main\R\app.r
+	
