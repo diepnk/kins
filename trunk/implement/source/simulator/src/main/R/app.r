@@ -7,10 +7,11 @@ library(MASS)
 library(data.table)
 require(DT)
 library(ggplot2)
+library(jsonlite)
 setwd("D:/Project/TS/KINS/GIT/deliverables/trunk/implement/source/simulator/src/main/R")
 
 
-cString<-odbcDriverConnect('driver={SQL Server};server=DIEPNGUYEN2789\\SQLEXPRESS;database=kins;uid=[sa]; pwd=[your_password]')
+cString<-odbcDriverConnect('driver={SQL Server};server=DIEPNGUYEN2789\\SQLEXPRESS;database=kins;uid=sa; pwd=gcsvn@123')
 
 variables<-"*"
 sql_learn<-paste("select", variables, " from [dbo].[test]")#sql
@@ -295,9 +296,25 @@ server <- shinyServer(function(input, output) {
     
   })
   
+  NYCStations <- reactive({
+    # Case 1: Need api-key
+    #article_key <- "&api-key=b75da00e12d54774a2d362adddcc9bef"
+    #url <- "http://api.nytimes.com/svc/search/v2/articlesearch.json?q=obamacare+socialism"
+    #req <- fromJSON(paste0(url, article_key))
+    #result <- req$response$docs
+    
+    # Case 2: No need api-key
+    citibike <- fromJSON("http://citibikenyc.com/stations/json")
+    stations <- citibike$stationBeanList
+    #head(stations, 90)
+    stations[1:90, 1:9]
+    
+  })
+  
   # [Diep] Render the datatable that list all values
   output$view<-renderDataTable({
-    datasetInput()
+    #datasetInput()
+    NYCStations()
     },options = list(orderClasses = TRUE))
   
   # [Diep] Export CSV
