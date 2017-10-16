@@ -438,3 +438,9 @@ rate_limit <- function() {
 
 rate_limit()
 #> 56 / 60 (Resets at 13:47:29)
+
+
+III) Others
+To install the "ggbio" package - https://bioconductor.org/packages/release/bioc/html/ggbio.html , start R and enter:
+- source("https://bioconductor.org/biocLite.R")
+- source("https://bioconductor.org/biocLite.R")biocLite("ggbio")
