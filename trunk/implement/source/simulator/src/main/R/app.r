@@ -1,4 +1,3 @@
-
 library(shiny)
 library(shinythemes)
 library(shinydashboard)
@@ -9,22 +8,22 @@ require(DT)
 library(ggplot2)
 setwd("D:/Project/TS/KINS/GIT/deliverables/trunk/implement/source/simulator/src/main/R")
 
+cString<-odbcDriverConnect('driver={SQL Server};server=Your server here\\SQLEXPRESS;database=kins;uid=sa; pwd=admin')
 
-cString<-odbcDriverConnect('driver={SQL Server};server=DIEPNGUYEN2789\\SQLEXPRESS;database=kins;uid=[sa]; pwd=[your_password]')
-
+#sql
 variables<-"*"
-sql_learn<-paste("select", variables, " from [dbo].[test]")#sql
+sql_learn<-paste("select", variables, " from [dbo].[test]")
 # [Diep] Get rows that there are full data (not missing any cell's value)
 df_learn_source<- na.omit(sqlQuery(cString, sql_learn))
 
 df_learn<-df_learn_source
 
 
- #df_learn<-read.csv("dummydata.csv", sep = ",")#tantative
+#df_learn<-read.csv("dummydata.csv", sep = ",")#tantative
  
- basedata <- as.data.frame(lapply(df_learn, mean))
- basedata$sex = 1
- basedata[21:180]<-0
+basedata <- as.data.frame(lapply(df_learn, mean))
+basedata$sex = 1
+basedata[21:180]<-0
 
 
 #################
@@ -37,6 +36,7 @@ recalc.risk<-function(data)
   pred<-data.frame(Diabetes, Stroke, HeartAtack)
   return(pred)
 }
+
 #sample
  recalc.days<-function(data)
  {
@@ -48,7 +48,6 @@ recalc.risk<-function(data)
    return(pred)
  }
 
-
 do.judgement<-function(dataset, val)
 {
   val.ratio<-subset(dataset, dataset[,1] == val)[,4]
@@ -59,111 +58,45 @@ do.judgement<-function(dataset, val)
   return(c(val.ratio,judgement))
 }
 
+#[Khang]For what?
 disp.color<-c("red", "yellow", "aqua", "green")
 disp.judge<-c("Refusal","Substandard","Substandard","Standard")
 disp.premium<-c(0,1,1,0)
 
-
 ui <- dashboardPage(
-  dashboardHeader(
-    title = "dashboard prototype", titleWidth = 600),
-    skin = "blue",
-
+  
+  skin = "blue",
+  
+  dashboardHeader(title = "dashboard prototype", titleWidth = 600),
 
   dashboardSidebar(
-    sidebarMenu(
+    sidebarMenu(id = "mytabs",
       menuItem("Dashboard", tabName = "dashboard"),
       menuItem("Raw data", tabName = "rawdata")
     ),
-
-    
-  #add a slider input
-  numericInput("age", "Age", value = ceiling(basedata$age), min = 30, max = 80),
-  sliderInput("bmi", "BMI", min = 15, max = 40, value = ceiling(basedata$BMI), step = 1, animate = T),
-  sliderInput("bp_h", "Blood Pressure(H)", 80, 150, ceiling(basedata$BP_H), step = 10, animate = T),
-  sliderInput("bp_l", "Blood Pressure(L)", 50, 100, ceiling(basedata$BP_L), step = 10, animate = T),
-  sliderInput("hba1c", "HbA1c", 4, 10, ceiling(basedata$HbA1c_HOKAN), step = 0.2, animate = T),
-  
-  # numericInput("age", "Age", 40, 30, 80),
-  # sliderInput("bmi", "BMI", 15, 40, 5, step = 1, animate = T),
-  # sliderInput("bp", "Blood Pressure(H)", 80, 150, 5, step = 10, animate = T),
-  # sliderInput("hba1c", "HbA1c", 4, 10, 5, step = 0.2, animate = T),
-  #add a checkbox input
-  checkboxGroupInput('selected_youin', 
-                     'labels:',
-                     c(names(df_learn)[21:28], names(df_learn[35:37])))
+    #Khang output pot for sliders
+    uiOutput("age"),
+    uiOutput("BMI"),
+    uiOutput("BP_H"),
+    uiOutput("BP_L"),
+    uiOutput("HbA1c_HOKAN"),
+    uiOutput("listCheckbox")
   ),
 
-        # Show a table summarizing the values entered
   dashboardBody(
-    # followings are the codes to modify color of header, sideber and tabmenu.
-    # tags$head(tags$style(HTML('
-    #           /* logo */
-    #           .skin-blue .main-header .logo {
-    #           background-color: #f4b943;
-    #           }
-    #           
-    #           /* logo when hovered */
-    #           .skin-blue .main-header .logo:hover {
-    #           background-color: #f4b943;
-    #           }
-    #           
-    #           /* navbar (rest of the header) */
-    #           .skin-blue .main-header .navbar {
-    #           background-color: #f4b943;
-    #           }        
-    #           
-    #           /* main sidebar */
-    #           .skin-blue .main-sidebar {
-    #           background-color: #f4b943;
-    #           }
-    #           
-    #           /* active selected tab in the sidebarmenu */
-    #           .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
-    #           background-color: #ff0000;
-    #           }
-    #           
-    #           /* other links in the sidebarmenu */
-    #           .skin-blue .main-sidebar .sidebar .sidebar-menu a{
-    #           background-color: #00ff00;
-    #           color: #000000;
-    #           }
-    #           
-    #           /* other links in the sidebarmenu when hovered */
-    #           .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
-    #           background-color: #ff69b4;
-    #           }
-    #           /* toggle button when hovered  */                    
-    #           .skin-blue .main-header .navbar .sidebar-toggle:hover{
-    #           background-color: #ff69b4;
-    #           }
-    #           '))),
-    # 
-
     tabItems(
       tabItem("dashboard",
         fluidRow(
         valueBoxOutput("ratio"), valueBoxOutput("recommend"), valueBoxOutput("premium")),
-        
-        ##pattern1
-        # plotOutput("distPlot"),
-        # plotOutput("riskPlot"),
-        # 
-        #pattern2
         fluidRow(
           column(7, plotOutput("distPlot", width = "100%", height = "600px")),
           column(5, plotOutput("riskPlot", width = "100%", height = "600px"))
         ),
-        # example of webGL usage
-        # fluidRow(
-        #   webGLOutput("gl")
-        # ),
         verbatimTextOutput("comment")
       ),
       tabItem("rawdata",
 
               dataTableOutput("view"),
-              # tableOutput("view2"),
               actionButton("Save","Save as .csv"),
               verbatimTextOutput("saved")
       )
@@ -173,24 +106,12 @@ ui <- dashboardPage(
 
 # Define server logic required to draw a histogram
 server <- shinyServer(function(input, output) {
-
-# 
-#   sliderValues <- reactive({
-#   # Compose data frame
-#     data.frame(
-#       Name = "plotitems",
-#       Value = input$plotitems,
-#       stringsAsFactors=FALSE)
-#   })
-#   
+  
   # [Diep] Get input of checkbox, not use currently
   output$checkboxOut<-renderPrint({ 
     names(basedata[input$selected_youin])
   })
-# 
-#   InitialParam<- reactive({
-#     basedata
-#   })
+
   
   # [Diep] reactive to only update change that get from the inputs such as age, BMI, BP_H, BP_L, HbA1c_HOKAN and checkboxes
   updatedParam <- reactive({
@@ -261,8 +182,6 @@ server <- shinyServer(function(input, output) {
     df.data$BP_H<-input$bp_h
     df.data$BP_L<-input$bp_l
     df.data$HbA1c_HOKAN<-input$hba1c
-    
-    
     df.data[input$selected_youin]<-1
     # [Diep] Calucate the risk by age base on the real input data that get from UI
     df.preds.nonzero<-data.frame(age = age, recalc.risk(df.data))
@@ -277,6 +196,26 @@ server <- shinyServer(function(input, output) {
     
   })
   
+  #[Khang] change menu according to tabs chosen
+  observe(
+    if(input$mytabs[1] == "dashboard"){
+      output$age<-renderUI(numericInput("age", "Age", value = ceiling(basedata$age), min = 30, max = 80))
+      output$BMI<-renderUI(sliderInput("bmi", "BMI", min = 15, max = 40, value = ceiling(basedata$BMI), step = 1, animate = T))
+      output$BP_H<-renderUI(sliderInput("bp_h", "Blood Pressure(H)", 80, 150, ceiling(basedata$BP_H), step = 10, animate = T))
+      output$BP_L<-renderUI(sliderInput("bp_l", "Blood Pressure(L)", 50, 100, ceiling(basedata$BP_L), step = 10, animate = T))
+      output$HbA1c_HOKAN<-renderUI(sliderInput("hba1c", "HbA1c", 4, 10, ceiling(basedata$HbA1c_HOKAN), step = 0.2, animate = T))
+      output$listCheckbox<-renderUI(  checkboxGroupInput('selected_youin', 'labels:', c(names(df_learn)[21:28], names(df_learn[35:37]))))
+    }
+    else
+    {
+      output$age<-renderUI("")
+      output$BMI<-renderUI("")
+      output$BP_H<-renderUI("")
+      output$BP_L<-renderUI("")
+      output$HbA1c_HOKAN<-renderUI("")
+      output$listCheckbox<-renderUI("")
+    }
+  )
   # [Diep] Render Risk Ratio plot
   output$distPlot <- renderPlot({
     df.hyoujun<-data.frame(age = datasetInput()[,1], preds = datasetInput()[,2])
@@ -287,12 +226,6 @@ server <- shinyServer(function(input, output) {
     #plot predicted days
      ggplot(df.plot, aes(x = age, y = preds, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "predicted days") +
        theme(legend.position=c(0.2,0.8), title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
-
-    #plot ratio
-    # ggplot(datasetInput(), aes(x = age, y = ratio, color = "red")) + geom_line(size = 1.2) + labs(title = "Risk Ratio") +
-    #   theme(legend.position= "none", title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
-    # 
-    
   })
   
   # [Diep] Render the datatable that list all values
@@ -353,9 +286,6 @@ server <- shinyServer(function(input, output) {
     ggplot(tdf, aes(x = class, y = value, fill = class)) + geom_bar(stat = "identity") + labs(title = "Risk profile of Admission", size = 20) + xlab(NULL) + ylab("Risk value") + coord_flip() + 
       theme(legend.position="none", title = element_text(size = 15), axis.text.x = element_text(size=10),
             axis.text.y = element_text(size=15)) + coord_polar()
-    # panel.background = element_rect(fill = "transparent",color = NA),panel.grid.minor = element_line(color = NA), 
-    # panel.grid.major = element_line(color = NA), plot.background = element_rect(fill = "transparent",color = NA), 
-    
    })
   
   # [Diep] Render the footer comments
@@ -385,11 +315,6 @@ server <- shinyServer(function(input, output) {
     }
     print(txt)
   })
-  
-  # example of webGL usage
-  # output$gl <- renderWebGL({
-  #   points3d(1:10,1:10,1:10)
-  # })
   
 })
 
