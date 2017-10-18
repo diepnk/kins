@@ -73,7 +73,9 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem("Dashboard", tabName = "dashboard"),
-      menuItem("Raw data", tabName = "rawdata")
+      menuItem("Raw data", tabName = "rawdata"),
+      menuItem("API Plot", tabName = "apiplot"),
+      menuItem("API raw data", tabName = "apidata")
     ),
 
     
@@ -166,6 +168,14 @@ ui <- dashboardPage(
               # tableOutput("view2"),
               actionButton("Save","Save as .csv"),
               verbatimTextOutput("saved")
+      ),
+      tabItem("apiplot",
+              fluidRow(
+                column(12, plotOutput("stationPlot", width = "100%", height = "600px"))
+              )
+      ),
+      tabItem("apidata",
+              dataTableOutput("viewAPI")
       )
     )
   )
@@ -295,6 +305,11 @@ server <- shinyServer(function(input, output) {
     
   })
   
+  output$stationPlot <- renderPlot({
+    df = NYCStations()
+    ggplot(data=df, aes(x=latitude, y=longitude, group=1)) + geom_point() + labs(title = "New York City Stations", size = 20)
+  })
+  
   NYCStations <- reactive({
     # Case 1: Need api-key
     #article_key <- "&api-key=b75da00e12d54774a2d362adddcc9bef"
@@ -312,10 +327,13 @@ server <- shinyServer(function(input, output) {
   
   # [Diep] Render the datatable that list all values
   output$view<-renderDataTable({
+    datasetInput()
+    },options = list(orderClasses = TRUE))
+  # Render the datatable that list all data getting from API
+  output$viewAPI<-renderDataTable({
     #datasetInput()
     NYCStations()
-    },options = list(orderClasses = TRUE))
-  
+  },options = list(orderClasses = TRUE))
   # [Diep] Export CSV
   output$saved<-renderPrint({
     input$Save
