@@ -6,9 +6,9 @@ library(MASS)
 library(data.table)
 require(DT)
 library(ggplot2)
-setwd("D:/Project/TS/KINS/GIT/deliverables/trunk/implement/source/simulator/src/main/R")
+#setwd("D:/Project/TS/KINS/GIT/deliverables/trunk/implement/source/simulator/src/main/R")
 
-cString<-odbcDriverConnect('driver={SQL Server};server=Your server here\\SQLEXPRESS;database=kins;uid=sa; pwd=admin')
+cString<-odbcDriverConnect('driver={SQL Server};server=KHANGDOAN3383\\SQLEXPRESS;database=kins;uid=sa; pwd=admin')
 
 #sql
 variables<-"*"
