@@ -24,4 +24,8 @@ if(!require(DT)) install.packages("DT",repos = "http://cran.us.r-project.org")
 if(!require(ggplot2)) install.packages("ggplot2",repos = "http://cran.us.r-project.org")
 if(!require(curl)) install.packages("curl",repos = "http://cran.us.r-project.org")
 
+#Run local R source code in the ./Shiny folder
 shiny::runApp("./Shiny/",port=8888,launch.browser=TRUE)
+
+#Run R source code that is pushed on gist.github - https://gist.github.com/
+#shiny::runGist('ffb0f8fb164d54890b0a6a6581713a2b',port=8888,launch.browser=TRUE)
