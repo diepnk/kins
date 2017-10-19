@@ -1,0 +1,27 @@
+The shiny package as a whole is distributed under GPL-3 (GNU GENERAL PUBLIC LICENSE version 3)
+
+1) GPL-3 license: https://en.wikipedia.org/wiki/GNU_General_Public_License#Version_3
+The GNU General Public License (GNU GPL or GPL) is a widely used free software license,
+which guarantees end users the freedom to run, study, share and modify the software.
+
+2) Shiny license: https://github.com/rstudio/shiny/blob/master/LICENSE
+The shiny package as a whole is distributed under GPL-3 (GNU GENERAL PUBLIC LICENSE version 3)./
+The shiny package includes other open source software components. The following
+is a list of these components (full copies of the license agreements used by
+these components are included below):
+
+- jQuery, https://github.com/jquery/jquery
+- jQuery UI (some components), https://github.com/jquery/jquery-ui
+- Bootstrap, https://github.com/twbs/bootstrap
+- html5shiv, https://github.com/aFarkas/html5shiv
+- Respond.js, https://github.com/scottjehl/Respond
+- bootstrap-datepicker, https://github.com/eternicode/bootstrap-datepicker
+- Font Awesome, https://github.com/FortAwesome/Font-Awesome
+- selectize.js, https://github.com/selectize/selectize.js
+- es5-shim, https://github.com/es-shims/es5-shim
+- ion.rangeSlider, https://github.com/IonDen/ion.rangeSlider
+- strftime for Javascript, https://github.com/samsonjs/strftime
+- DataTables, https://github.com/DataTables/DataTables
+- showdown.js, https://github.com/showdownjs/showdown
+- highlight.js, https://github.com/isagalaev/highlight.js
+- tar implementation from R, http://www.r-project.org/
