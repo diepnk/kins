@@ -1,0 +1,5 @@
+field_name,field_display_name,threshold
+BMI,BMI,30
+BP_H,Blood Pressure (H),150
+BP_L,Blood Pressure (L),80
+HbA1c_HOKAN,HbA1c,10

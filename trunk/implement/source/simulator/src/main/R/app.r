@@ -182,8 +182,10 @@ ui <- dashboardPage(
 )
 
 # Define server logic required to draw a histogram
-server <- shinyServer(function(input, output) {
-
+server <- shinyServer(function(input, output, session) {
+  session$onSessionEnded(function() {
+    stopApp()
+  })
 # 
 #   sliderValues <- reactive({
 #   # Compose data frame
