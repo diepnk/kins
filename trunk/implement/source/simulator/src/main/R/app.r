@@ -9,6 +9,7 @@ require(DT)
 library(ggplot2)
 library(curl)
 library(jsonlite)
+library(car)
 
 cString<-odbcDriverConnect('driver={SQL Server};server=DIEPNGUYEN2789\\SQLEXPRESS;database=kins;uid=sa; pwd=gcsvn@123')
 
@@ -25,8 +26,7 @@ df_learn<-df_learn_source
  basedata <- as.data.frame(lapply(df_learn, mean))
  basedata$sex = 1
  basedata[21:180]<-0
-
-
+ 
 #################
 #sample
 recalc.risk<-function(data)
@@ -293,13 +293,44 @@ server <- shinyServer(function(input, output, session) {
   output$distPlot <- renderPlot({
     df.hyoujun<-data.frame(age = datasetInput()[,1], preds = datasetInput()[,2])
     df.hyoujun<-cbind(df.hyoujun, class = "hyoujun")
+    
+    #print(df.hyoujun)
+    
     df.youin<-data.frame(age = datasetInput()[,1], preds = datasetInput()[,3])
     df.youin<-cbind(df.youin, class = "youin")
+    
+    #print(df.youin)
+    
     df.plot<-rbind(df.hyoujun, df.youin)
+    
+    #print(df.plot)
+    
+    
     #plot predicted days
-     ggplot(df.plot, aes(x = age, y = preds, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "predicted days") +
-       theme(legend.position=c(0.2,0.8), title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
-
+    #ggplot(df.plot, aes(x = age, y = preds, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "predicted days") +
+    #  theme(legend.position=c(0.2,0.8), title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
+    
+    # heatmap not correlation
+    #dfb <- df_learn
+    #dfb <- dfb[order(dfb$id),]
+    #row.names(dfb) <- dfb$id
+    #dfb <- dfb[,1:5]
+    #dat_matrix <- data.matrix(dfb)
+    #dat_heatmap <- heatmap(dat_matrix, Rowv=NA, Colv=NA, col = cm.colors(256), scale="column", margins=c(5,10))
+    
+    #heatmap with correlation
+    dfb <- df_learn[,c(2:10)]
+    cormat <- round(cor(dfb), 2)
+    melted_cormat <- melt(cormat)
+    ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + geom_tile()
+    #print(melted_cormat)
+    
+    
+    #dfCar <- datasetInput()
+    
+    #scatter3d(x = dfCar$age, y = dfCar$hyoujun, z = dfCar$youin, groups = dfCar$age,
+    #grid = FALSE, fit = "smooth")
+     
     #plot ratio
     # ggplot(datasetInput(), aes(x = age, y = ratio, color = "red")) + geom_line(size = 1.2) + labs(title = "Risk Ratio") +
     #   theme(legend.position= "none", title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
