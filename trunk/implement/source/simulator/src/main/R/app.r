@@ -60,65 +60,100 @@ disp.judge<-c("Refusal","Substandard","Substandard","Standard")
 disp.premium<-c(0,1,1,0)
 
 
-ui <- dashboardPage(
-  dashboardHeader(
-    title = "dashboard prototype", titleWidth = 600),
-    skin = "blue",
+ui <- fluidPage(
+  tabsetPanel(
+    tabPanel("Dashboard", fluid = TRUE,
+               dashboardPage(
+                 dashboardHeader(
+                   title = "dashboard prototype", titleWidth = 600),
+                 skin = "blue",
 
-
-  dashboardSidebar(
-    sidebarMenu(
-      menuItem("Dashboard", tabName = "dashboard"),
-      menuItem("Raw data", tabName = "rawdata"),
-      menuItem("API Plot", tabName = "apiplot"),
-      menuItem("API raw data", tabName = "apidata")
+                 dashboardSidebar(
+                   sidebarMenu(
+                     menuItem("Dashboard", tabName = "dashboard"),
+                     menuItem("Raw data", tabName = "rawdata"),
+                     menuItem("API Plot", tabName = "apiplot"),
+                     menuItem("API raw data", tabName = "apidata")
+                   ),
+                   
+                   #add a slider input
+                   numericInput("age", "Age", value = ceiling(basedata$age), min = 30, max = 80),
+                   sliderInput("bmi", "BMI", min = 15, max = 40, value = ceiling(basedata$BMI), step = 1, animate = T),
+                   sliderInput("bp_h", "Blood Pressure(H)", 80, 150, ceiling(basedata$BP_H), step = 10, animate = T),
+                   sliderInput("bp_l", "Blood Pressure(L)", 50, 100, ceiling(basedata$BP_L), step = 10, animate = T),
+                   sliderInput("hba1c", "HbA1c", 4, 10, ceiling(basedata$HbA1c_HOKAN), step = 0.2, animate = T),
+                   
+                   #add a checkbox input
+                   checkboxGroupInput('selected_youin', 
+                                      'labels:',
+                                      c(names(df_learn)[21:28], names(df_learn[35:37])))
+                 ),
+                 
+                 # Show a table summarizing the values entered
+                 dashboardBody(
+                   tabItems(
+                     tabItem("dashboard",
+                             fluidRow(
+                               valueBoxOutput("ratio"), valueBoxOutput("recommend"), valueBoxOutput("premium")),
+                             #pattern2
+                             fluidRow(
+                               column(7, plotOutput("distPlot", width = "100%", height = "600px")),
+                               column(5, plotOutput("riskPlot", width = "100%", height = "600px"))
+                             ),
+                             verbatimTextOutput("comment")
+                     ),
+                     tabItem("rawdata",
+                             
+                             dataTableOutput("view"),
+                             # tableOutput("view2"),
+                             actionButton("Save","Save as .csv"),
+                             verbatimTextOutput("saved")
+                     ),
+                     tabItem("apiplot",
+                             fluidRow(
+                               column(12, plotOutput("stationPlot", width = "100%", height = "600px"))
+                             )
+                     ),
+                     tabItem("apidata",
+                             dataTableOutput("viewAPI")
+                     )
+                   )
+                 )
+               )
     ),
-
-    
-  #add a slider input
-  numericInput("age", "Age", value = ceiling(basedata$age), min = 30, max = 80),
-  sliderInput("bmi", "BMI", min = 15, max = 40, value = ceiling(basedata$BMI), step = 1, animate = T),
-  sliderInput("bp_h", "Blood Pressure(H)", 80, 150, ceiling(basedata$BP_H), step = 10, animate = T),
-  sliderInput("bp_l", "Blood Pressure(L)", 50, 100, ceiling(basedata$BP_L), step = 10, animate = T),
-  sliderInput("hba1c", "HbA1c", 4, 10, ceiling(basedata$HbA1c_HOKAN), step = 0.2, animate = T),
-
-  #add a checkbox input
-  checkboxGroupInput('selected_youin', 
-                     'labels:',
-                     c(names(df_learn)[21:28], names(df_learn[35:37])))
-  ),
-
-  # Show a table summarizing the values entered
-  dashboardBody(
-    tabItems(
-      tabItem("dashboard",
-        fluidRow(
-        valueBoxOutput("ratio"), valueBoxOutput("recommend"), valueBoxOutput("premium")),
-        #pattern2
-        fluidRow(
-          column(7, plotOutput("distPlot", width = "100%", height = "600px")),
-          column(5, plotOutput("riskPlot", width = "100%", height = "600px"))
-        ),
-        verbatimTextOutput("comment")
-      ),
-      tabItem("rawdata",
-
-              dataTableOutput("view"),
-              # tableOutput("view2"),
-              actionButton("Save","Save as .csv"),
-              verbatimTextOutput("saved")
-      ),
-      tabItem("apiplot",
-              fluidRow(
-                column(12, plotOutput("stationPlot", width = "100%", height = "600px"))
-              )
-      ),
-      tabItem("apidata",
-              dataTableOutput("viewAPI")
-      )
+    tabPanel("Data Correlation", fluid = TRUE,
+             dashboardPage(
+               dashboardHeader(
+                 title = "Data Correlation", titleWidth = 600),
+               skin = "blue",
+               dashboardSidebar(
+                 sidebarMenu(
+                   menuItem("Correlation", tabName = "correlation")
+                 ),
+                 #add a checkbox input
+                 checkboxGroupInput('selected_histogram', 
+                                    'labels:',
+                                    c(names(df_learn)[21:28], names(df_learn[35:37])))
+               ),
+               
+               # Show plot for data correlation
+               dashboardBody(
+                 tabItems(
+                   tabItem("correlation",
+                           fluidRow(
+                             column(12, plotOutput("histogramPlot", width = "100%", height = "1200px"))
+                           ),
+                           fluidRow(
+                             column(12, plotOutput("heatMap", width = "100%", height = "1200px"))
+                           )
+                   )
+                 )
+               )
+             )
     )
   )
 )
+
 
 # Define server logic required to draw a histogram
 server <- shinyServer(function(input, output, session) {
@@ -203,12 +238,6 @@ server <- shinyServer(function(input, output, session) {
     #plot predicted days
     ggplot(df.plot, aes(x = age, y = preds, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "predicted days") +
       theme(legend.position=c(0.2,0.8), title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
-    
-    #heatmap with correlation
-    #dfb <- df_learn[,c(2:10)]
-    #cormat <- round(cor(dfb), 2)
-    #melted_cormat <- melt(cormat)
-    #ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + geom_tile()
 
     #plot ratio
     # ggplot(datasetInput(), aes(x = age, y = ratio, color = "red")) + geom_line(size = 1.2) + labs(title = "Risk Ratio") +
@@ -231,9 +260,11 @@ server <- shinyServer(function(input, output, session) {
   output$view<-renderDataTable({
     datasetInput()
     },options = list(orderClasses = TRUE))
+  
   output$viewAPI<-renderDataTable({
     NYCStations()
   },options = list(orderClasses = TRUE))
+  
   output$saved<-renderPrint({
     input$Save
     write.table(datasetInput(), "testdata.csv")
@@ -309,6 +340,14 @@ server <- shinyServer(function(input, output, session) {
       txt<- paste("echo > ", top.effect , " is the major negative effect on future admission risk")
     }
     print(txt)
+  })
+  
+  output$heatMap <- renderPlot({
+    #heatmap with correlation
+    dfb <- df_learn[,c(2:10)]
+    cormat <- round(cor(dfb), 2)
+    melted_cormat <- melt(cormat)
+    ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + geom_tile()
   })
 })
 
