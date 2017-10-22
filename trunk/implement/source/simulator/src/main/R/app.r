@@ -121,35 +121,38 @@ ui <- fluidPage(
                  )
                )
     ),
-    tabPanel("Data Correlation", fluid = TRUE,
-             dashboardPage(
-               dashboardHeader(
-                 title = "Data Correlation", titleWidth = 600),
-               skin = "blue",
-               dashboardSidebar(
-                 sidebarMenu(
-                   menuItem("Correlation", tabName = "correlation")
-                 ),
-                 #add a checkbox input
-                 checkboxGroupInput('selected_histogram', 
-                                    'labels:',
-                                    c(names(df_learn)[21:28], names(df_learn[35:37])))
-               ),
-               
-               # Show plot for data correlation
-               dashboardBody(
-                 tabItems(
-                   tabItem("correlation",
-                           fluidRow(
-                             column(12, plotOutput("histogramPlot", width = "100%", height = "1200px"))
-                           ),
-                           fluidRow(
-                             column(12, plotOutput("heatMap", width = "100%", height = "1200px"))
+    tabPanel("Data correlation", fluid = TRUE,
+                     dashboardPage(
+                       dashboardHeader(
+                         title = "Data correlation", titleWidth = 600),
+                       skin = "blue",
+                       
+                       dashboardSidebar(
+                         sidebarMenu(
+                           menuItem("Correlation", tabName = "correlation")
+                         ),
+                         #add a checkbox input
+                         checkboxGroupInput('selected_youin_correlation', 
+                                            'labels:',
+                                            c(names(df_learn)[21:28], names(df_learn[35:37])))
+                       ),
+                       
+                       # Show a table summarizing the values entered
+                       dashboardBody(
+                         tabItems(
+                           tabItem("correlation",
+                                   fluidRow(
+                                     column(6, plotOutput("histogramPlot", width = "100%", height = "300px")),
+                                     column(6, plotOutput("heatMap1", width = "100%", height = "300px"))
+                                   ),
+                                   fluidRow(
+                                     column(6, plotOutput("missingRate", width = "100%", height = "300px")),
+                                     column(6, plotOutput("heatMap", width = "100%", height = "300px"))
+                                   )
                            )
-                   )
-                 )
-               )
-             )
+                         )
+                       )
+                     )
     )
   )
 )
@@ -238,7 +241,6 @@ server <- shinyServer(function(input, output, session) {
     #plot predicted days
     ggplot(df.plot, aes(x = age, y = preds, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "predicted days") +
       theme(legend.position=c(0.2,0.8), title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
-
     #plot ratio
     # ggplot(datasetInput(), aes(x = age, y = ratio, color = "red")) + geom_line(size = 1.2) + labs(title = "Risk Ratio") +
     #   theme(legend.position= "none", title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
@@ -340,6 +342,14 @@ server <- shinyServer(function(input, output, session) {
       txt<- paste("echo > ", top.effect , " is the major negative effect on future admission risk")
     }
     print(txt)
+  })
+  
+  output$histogramPlot <- renderPlot({
+    #heatmap with correlation
+    dfb <- df_learn[,c(2:10)]
+    cormat <- round(cor(dfb), 2)
+    melted_cormat <- melt(cormat)
+    ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + geom_tile()
   })
   
   output$heatMap <- renderPlot({
