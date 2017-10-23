@@ -6,7 +6,6 @@ library(MASS)
 library(data.table)
 require(DT)
 library(ggplot2)
-#setwd("D:/Project/TS/KINS/GIT/deliverables/trunk/implement/source/simulator/src/main/R")
 
 #Get data
 {
@@ -15,6 +14,22 @@ variables<-"*"
 sql_learn<-paste("select", variables, " from [dbo].[test]")#sql
 df_learn_source<- na.omit(sqlQuery(cString, sql_learn))
 df_learn<-df_learn_source
+
+
+
+#count null values of columns [2:10]
+na_count <- colSums(is.na(df_learn[,2:10]))
+#or use this: na_count <-sapply(df_learn[,2:10], function(y) sum(length(which(is.na(y)))))
+
+#count all values (all rows)
+numRows <- nrow(df_learn[,2:10])
+
+#Calculate the missing rate percent, round up into 2 digits of decimal
+missingRate <- round( na_count/numRows * 100, 2)
+#print(missingRate)
+
+
+
 basedata <- as.data.frame(lapply(df_learn, mean))
 basedata$sex = 1
 basedata[21:180]<-0
@@ -295,13 +310,17 @@ server <- shinyServer(function(input, output) {
     df.plot<-rbind(df.hyoujun, df.youin)
     #plot predicted days
     if(input$chartType[1] == "Ratio"){
-      ggplot(df.plot, aes(x = age, y = preds, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "Ratio") +
-      theme(legend.position=c(0.2,0.8), title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
+      ggplot(datasetInput(), aes(x = age, y = ratio, color = "red")) + geom_line(size = 1.2) + labs(title = "Risk Ratio") +
+        
+        theme(legend.position= "none", title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
+        
     }
     else
     {
-      ggplot(df.plot, aes(x = preds, y = age, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "Days") +
+      ggplot(df.plot, aes(x = age, y = preds, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "predicted days") +
+        
         theme(legend.position=c(0.2,0.8), title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
+      
     }
   })
   
