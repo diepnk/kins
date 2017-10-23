@@ -6,6 +6,8 @@ library(MASS)
 library(data.table)
 require(DT)
 library(ggplot2)
+library(plot3D)
+#setwd("D:/Project/TS/KINS/GIT/deliverables/trunk/implement/source/simulator/src/main/R")
 
 #Get data
 {
@@ -14,22 +16,6 @@ variables<-"*"
 sql_learn<-paste("select", variables, " from [dbo].[test]")#sql
 df_learn_source<- na.omit(sqlQuery(cString, sql_learn))
 df_learn<-df_learn_source
-
-
-
-#count null values of columns [2:10]
-na_count <- colSums(is.na(df_learn[,2:10]))
-#or use this: na_count <-sapply(df_learn[,2:10], function(y) sum(length(which(is.na(y)))))
-
-#count all values (all rows)
-numRows <- nrow(df_learn[,2:10])
-
-#Calculate the missing rate percent, round up into 2 digits of decimal
-missingRate <- round( na_count/numRows * 100, 2)
-#print(missingRate)
-
-
-
 basedata <- as.data.frame(lapply(df_learn, mean))
 basedata$sex = 1
 basedata[21:180]<-0
@@ -178,16 +164,17 @@ ui <- dashboardPage(
         #
         fluidRow(
           column(3,plotOutput("plot01", width = "100%", height = "200px"),textOutput("meanValue1"),textOutput("maxValue1"),textOutput("minValue1")),
-          column(3,plotOutput("plot02", width = "100%", height = "200px")),
-          column(3,plotOutput("plot03", width = "100%", height = "200px")),
-          #column(2,plotOutput("plot04", width = "100%", height = "200px")),
+          column(3,plotOutput("plot02", width = "100%", height = "200px"),textOutput("meanValue2"),textOutput("maxValue2"),textOutput("minValue2")),
+          column(3,plotOutput("plot03", width = "100%", height = "200px"),textOutput("meanValue3"),textOutput("maxValue3"),textOutput("minValue3")),
           column(3,div(style = "height:200px; overflow: scroll; overflow-x: hidden",
                        checkboxGroupInput('forHistogram', 'For histograms', names(df_learn))))
         ),
-        fluidRow(align="center","#######################################################################################################"),
+        fluidRow(align="center","################################################################################################################################################################"),
         fluidRow(
-          column(4,plotOutput("plot05", width = "100%", height = "400px")),
-          column(8,plotOutput("plot06", width = "100%", height = "400px"))
+          column(3,plotOutput("plot05", width = "100%", height = "400px")),
+          column(6,plotOutput("heatmap", width = "100%", height = "400px")),
+          column(3,div(style = "height:400px; overflow: scroll; overflow-x: hidden",
+                       checkboxGroupInput('forHeatmap', 'For heatmap', names(df_learn))))
         )
        )
       )
@@ -311,17 +298,21 @@ server <- shinyServer(function(input, output) {
     #plot predicted days
     if(input$chartType[1] == "Ratio"){
       ggplot(datasetInput(), aes(x = age, y = ratio, color = "red")) + geom_line(size = 1.2) + labs(title = "Risk Ratio") +
-        
-        theme(legend.position= "none", title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
-        
-    }
-    else
-    {
-      ggplot(df.plot, aes(x = age, y = preds, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "predicted days") +
-        
-        theme(legend.position=c(0.2,0.8), title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
+      theme(legend.position= "none", title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
       
     }
+    else if(input$chartType[1] == "Days"){
+      ggplot(df.plot, aes(x = age, y = preds, fill = class, colour = class)) + geom_line(size = 1.2) + labs(title = "predicted days") +
+      theme(legend.position=c(0.2,0.8), title = element_text(size = 15), axis.text.x = element_text(size=10), axis.text.y = element_text(size=15))
+    }
+      else{
+        #scatter3D(df_learn["age"],df_learn["BMI"],df_learn["BP_H"])
+        x <- as.numeric(unlist(df_learn["age"]))
+        y <- as.numeric(unlist(df_learn["BMI"]))
+        z <- as.numeric(unlist(df_learn["BP_H"]))
+        
+        points3D(x, y ,z )
+      }
   })
   
 #######################################################################################################################
@@ -364,37 +355,57 @@ server <- shinyServer(function(input, output) {
 
 observe(
   if(is.null(input$forHistogram)){
-    for(x in 1:6){
-      tempName <- paste("plot0",as.character(x),sep = "") 
-      output[[tempName]] <-renderPlot("")}
-  }
-  else if(length(input$forHistogram)<5){
+    #First render "Place holder"
     for(x in 1:4){
       tempName <- paste("plot0",as.character(x),sep = "") 
-      output[[tempName]] <-renderPlot("")}
+      output[[tempName]] <-renderPlot("")
+      tempName <- paste("meanValue",as.character(x),sep = "")
+      output[[tempName]] <-renderText("")
+      tempName <- paste("minValue",as.character(x),sep = "")
+      output[[tempName]] <-renderText("")
+      tempName <- paste("maxValue",as.character(x),sep = "")
+      output[[tempName]] <-renderText("")
+    }
+  }
+  else if(length(input$forHistogram)<5){
+    #Delete First
+    for(x in 1:4){
+      tempName <- paste("plot0",as.character(x),sep = "") 
+      output[[tempName]] <-renderPlot("")
+      tempName <- paste("meanValue",as.character(x),sep = "")
+      output[[tempName]] <-renderText("")
+      tempName <- paste("minValue",as.character(x),sep = "")
+      output[[tempName]] <-renderText("")
+      tempName <- paste("maxValue",as.character(x),sep = "")
+      output[[tempName]] <-renderText("")
+    }
+    #Re-render
     for(y in 1:length(input$forHistogram)){
       local({
+      xName <- input$forHistogram[y]
       temp <- as.numeric(unlist(df_learn[input$forHistogram[y]]))
-      tempChart <- renderPlot(hist(temp))
+      tempChart <- renderPlot(hist(temp,main = xName, xlab = xName))
       tempName <- paste("plot0",as.character(y),sep = "") 
       output[[tempName]] <-tempChart
-      output[[tempName]] <-tempChart
+      tempName <- paste("meanValue",as.character(y),sep = "")
+      output[[tempName]] <-renderText(paste("Average: ",ceiling(mean(temp, na.rm=T))))
+      tempName <- paste("minValue",as.character(y),sep = "")
+      output[[tempName]] <-renderText(paste("Min: ",ceiling(min(temp, na.rm=T))))
+      tempName <- paste("maxValue",as.character(y),sep = "")
+      output[[tempName]] <-renderText(paste("Max: ",ceiling(max(temp, na.rm=T))))
       })
     }
   }
-)  
-  output$meanValue1<-renderText("ABC")
-  output$maxValue1<-renderText("ABC")
-  output$minValue1<-renderText("ABC")
-  
-  #for (i in 1:4){
-    #tempChart <- renderPlot({
-      #temp <- as.numeric(unlist(df_learn["BMI"]))
-      #hist(temp)
-    #})
-    #tempName <- paste("plot0",as.character(i),sep = "") 
-    #output[[tempName]] <-tempChart
-  #}
+) 
+
+observe(
+  if(is.null(input$forHeatmap)||length(input$forHeatmap)<2){
+    output$heatmap <- renderPlot("")
+  }
+  else{
+    output$heatmap <- renderPlot("")
+  }
+)
   
   output$comment <- renderPrint({
     val<-do.judgement(datasetInput(), input$age)
