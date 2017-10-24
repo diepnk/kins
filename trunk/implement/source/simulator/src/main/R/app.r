@@ -7,15 +7,15 @@ library(data.table)
 require(DT)
 library(ggplot2)
 library(plot3D)
-#setwd("D:/Project/TS/KINS/GIT/deliverables/trunk/implement/source/simulator/src/main/R")
 
 #Get data
 {
-cString<-odbcDriverConnect('driver={SQL Server};server=KHANGDOAN3383\\SQLEXPRESS;database=kins;uid=sa; pwd=admin')
+cString<-odbcDriverConnect('driver={SQL Server};server=DIEPNGUYEN2789\\SQLEXPRESS;database=kins;uid=sa; pwd=gcsvn@123')
 variables<-"*"
 sql_learn<-paste("select", variables, " from [dbo].[test]")#sql
 df_learn_source<- na.omit(sqlQuery(cString, sql_learn))
 df_learn<-df_learn_source
+df_learn<-df_learn[,-1]
 basedata <- as.data.frame(lapply(df_learn, mean))
 basedata$sex = 1
 basedata[21:180]<-0
