@@ -12,7 +12,7 @@ library(plot3D)
 {
 cString<-odbcDriverConnect('driver={SQL Server};server=KHANGDOAN3383\\SQLEXPRESS;database=kins;uid=sa; pwd=admin')
   variables<-"*"
-  sql_learn<-paste("select", variables, " from [dbo].[test]")#sql
+  sql_learn<-paste("select", variables, " from [dbo].[test]")
   df_learn_source <- sqlQuery(cString, sql_learn)
   df_learn_source <- df_learn_source[,-1]
   df_learn<-na.omit(df_learn_source)
@@ -117,26 +117,10 @@ do.judgement<-function(dataset, val)
                        #Checkbox list
                        checkboxGroupInput('selected_youin', 'labels:', c(names(df_learn)[21:28], names(df_learn[35:37])))
       )
-      #For Hist
-      #conditionalPanel(condition = "input.mytabs == 'histogram'",
-      #fluidRow(column(12, div(style = "overflow-x: scroll;height:250px",
-      #checkboxGroupInput('forHistogram', 'For histograms', names(df_learn)))))
-      #),
-      #For Heatmap
-      #conditionalPanel(condition = "input.mytabs == 'histogram'",
-      #fluidRow(column(12, div(style = "overflow-x: scroll; height:250px",
-      #checkboxGroupInput('forHeatmap', 'For heatmap:', names(df_learn))))))
-      
     ),
-    
-    
     #add checkboxGroup for histogram and heatmap
-    
-    
     #######################################################################################################################
     #HISTORGRAM&HEATMAP TAB
-    
-    
     dashboardBody(
       tabItems(
         tabItem("dashboard",
@@ -202,42 +186,30 @@ do.judgement<-function(dataset, val)
     
     #define datasetInput and load data
     datasetInput <- reactive({
-      # [Diep] Get all columns from db excepts the "age" column
       b<-basedata[setdiff(colnames(basedata), "age")] 
-      # [Diep] the "age" will hard-code init by a sequence from 30 to 80 
       age<-seq(30,80)
-      # [Diep] re-combine the age into the basedata
       df.data<-cbind(age, b)
       
       # df.data$age<-input$age
-      # [Diep] Calucate the risk at the standard data (do not check checkboxes, preds is zero)
       df.data[input$selected_youin]<-0
       df.preds.zero<-recalc.risk(df.data)
       df.pred.days.zero<-recalc.days(df.preds.zero)
       names(df.pred.days.zero)<-"preds.hyoujun"
-      
-      # [Diep] Get the real input from the UI
       #use input values
       df.data$BMI<-input$bmi
       df.data$BP_H<-input$bp_h
       df.data$BP_L<-input$bp_l
       df.data$HbA1c_HOKAN<-input$hba1c
-      
-      
       df.data[input$selected_youin]<-1
-      # [Diep] Calucate the risk base on the real input data that get from UI
       df.preds.nonzero<-recalc.risk(df.data)
       df.pred.days.nonzero<-recalc.days(df.preds.nonzero)
       names(df.pred.days.nonzero)<-"preds.youin"
-      
-      # [Diep] Build a data frame that includes age, risk base on the standard data, risk base on the input data and the ratio between them
       data.frame(age = age,
                  hyoujun = df.pred.days.zero[,1],
                  youin = df.pred.days.nonzero[,1],
                  ratio = df.pred.days.nonzero[,1]/df.pred.days.zero[,1]
       )
     })
-    
     
     datasetRiskProfile <- reactive({
       b<-basedata[setdiff(colnames(basedata), "age")] 
@@ -253,7 +225,6 @@ do.judgement<-function(dataset, val)
       df.plot<-df.preds.age[setdiff(colnames(df.preds.age), "age")]
       sum.risk<-sum(df.plot)
       df.plot/sum.risk
-      
     })
     
     output$ratio <- renderValueBox({ 
@@ -287,8 +258,6 @@ do.judgement<-function(dataset, val)
       ) 
     })
     
-    
-    # [Diep] Render Risk Ratio plot
     output$distPlot <- renderPlot({
       df.hyoujun<-data.frame(age = datasetInput()[,1], preds = datasetInput()[,2])
       df.hyoujun<-cbind(df.hyoujun, class = "hyoujun")
@@ -309,30 +278,24 @@ do.judgement<-function(dataset, val)
         x <- as.numeric(unlist(df_learn["age"]))
         y <- as.numeric(unlist(df_learn["BMI"]))
         z <- as.numeric(unlist(df_learn["BP_H"]))
-        
         points3D(x, y ,z )
       }
     })
     
     #######################################################################################################################
     #RAWDATA TAB
-    
-    # [Diep] Render the datatable that list all values
     output$view<-renderDataTable({
       datasetInput()
     },options = list(orderClasses = TRUE))
     
-    # [Diep] Export CSV
     output$saved<-renderPrint({
       input$Save
       write.table(datasetInput(), "testdata.csv")
-      # dff<-as.data.frame(datasetInput)
       print(datasetInput()$hyoujun[1])
     })
     
     #######################################################################################################################
     #HISTORGRAM&HEATMAP TAB 
-    
     output$riskPlot <- renderPlot({
       name.class<-names(datasetRiskProfile())
       name.class<-gsub("Admission_", "", name.class)
@@ -344,15 +307,7 @@ do.judgement<-function(dataset, val)
               axis.text.y = element_text(size=15)) + coord_polar()
       
     })
-    
-    ######### Them vao
-    
-    
-    #tempChart <- renderPlot({
-    #temp <- as.numeric(unlist(df_learn["BMI"]))
-    #hist(temp)
-    #})
-    
+
     observe(
       if(is.null(input$forHistogram)){
         #First render "Place holder"
@@ -462,7 +417,6 @@ do.judgement<-function(dataset, val)
     })
   })
 }
-
 
 # Run the application
 shinyApp(ui = ui, server = server)
