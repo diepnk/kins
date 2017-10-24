@@ -10,7 +10,7 @@ library(plot3D)
 
 #Get data
 {
-cString<-odbcDriverConnect('driver={SQL Server};server=DIEPNGUYEN2789\\SQLEXPRESS;database=kins;uid=sa; pwd=gcsvn@123')
+cString<-odbcDriverConnect('driver={SQL Server};server=KHANGDOAN3383\\SQLEXPRESS;database=kins;uid=sa; pwd=admin')
   variables<-"*"
   sql_learn<-paste("select", variables, " from [dbo].[test]")#sql
   df_learn_source <- sqlQuery(cString, sql_learn)
@@ -171,7 +171,7 @@ do.judgement<-function(dataset, val)
                 ),
                 fluidRow(align="center","################################################################################################################################################################"),
                 fluidRow(
-                  column(3,div(style = "height:400px; overflow: scroll; overflow-x: hidden", htmlOutput("missingData"))),
+                  column(3,div(style = "height:400px; overflow: scroll; overflow-x: hidden", "MISSING RATE", htmlOutput("missingData"))),
                   column(6,plotOutput("heatmap", width = "100%", height = "400px")),
                   column(3,div(style = "height:400px; overflow: scroll; overflow-x: hidden",
                                checkboxGroupInput('forHeatmap', 'For heatmap', names(df_learn))))
@@ -426,7 +426,7 @@ do.judgement<-function(dataset, val)
                                      input$forHeatmap[i], 
                                      ":", 
                                      round(sum(is.na(df_learn_source[input$forHeatmap[i]]))/numRows * 100, 2),
-                                     "<br/>")
+                                     "%<br/>")
         }
         output$missingData <- renderText(
           HTML(missingDataString)
