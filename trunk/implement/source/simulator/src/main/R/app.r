@@ -344,6 +344,7 @@ do.judgement<-function(dataset, val)
               axis.text.y = element_text(size=15)) + coord_polar()
       
     })
+    
     ######### Them vao
     
     
@@ -396,6 +397,9 @@ do.judgement<-function(dataset, val)
         }
       }
     ) 
+
+    #count all values (all rows)
+    numRows <- nrow(df_learn_source)
     
     observe(
       if(is.null(input$forHeatmap)||length(input$forHeatmap)<2){
@@ -421,7 +425,7 @@ do.judgement<-function(dataset, val)
           missingDataString <- paste(missingDataString,
                                      input$forHeatmap[i], 
                                      ":", 
-                                     sum(is.na(df_learn_source[input$forHeatmap[i]])),
+                                     round(sum(is.na(df_learn_source[input$forHeatmap[i]]))/numRows * 100, 2),
                                      "<br/>")
         }
         output$missingData <- renderText(
